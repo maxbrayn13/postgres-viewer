@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lot.lot_number }} - TenderFinder{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ url_for('catalog') }}" style="color: var(--primary-color); text-decoration: none;">
+            ← Назад в каталог
+        </a>
+    </div>
+    
+    <!-- Lot Header -->
+    <div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <div class="lot-number" style="font-size: 1rem; margin-bottom: 0.5rem;">
+                    {{ lot.lot_number }}
+                </div>
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">
+                    {{ lot.simplified_name or lot.original_name }}
+                </h1>
+                {% if lot.customer %}
+                    <p style="color: var(--text-secondary); font-size: 0.875rem;">
+                        🏢 Заказчик: {{ lot.customer }}
+                    </p>
+                {% endif %}
+            </div>
+            
+            <div style="text-align: right;">
+                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                    Цена тендера:
+                </div>
+                <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary-color);">
+                    {{ "{:,.0f}".format(lot.tender_price) }} ₸
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; padding: 1.5rem; background: var(--light-bg); border-radius: 0.5rem;">
+            <div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+                    Количество
+                </div>
+                <div style="font-size: 1.5rem; font-weight: 700;">
+                    {{ lot.quantity }} {{ lot.unit or 'шт' }}
+                </div>
+            </div>
+            
+            <div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+                    Товаров найдено
+                </div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--secondary-color);">
+                    {{ total_products }}
+                </div>
+            </div>
+            
+            {% if lot.category %}
+            <div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+                    Категория
+                </div>
+                <div style="font-size: 1.125rem; font-weight: 600;">
+                    {{ lot.category }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Country Tabs -->
+    <div class="country-tabs">
+        {% if products_by_country['CN'] %}
+        <button class="country-tab active" data-country="CN">
+            🇨🇳 Китай ({{ products_by_country['CN']|length }})
+        </button>
+        {% endif %}
+        
+        {% if products_by_country['RU'] %}
+        <button class="country-tab {% if not products_by_country['CN'] %}active{% endif %}" data-country="RU">
+            🇷🇺 Россия ({{ products_by_country['RU']|length }})
+        </button>
+        {% endif %}
+        
+        {% if products_by_country['KZ'] %}
+        <button class="country-tab {% if not products_by_country['CN'] and not products_by_country['RU'] %}active{% endif %}" data-country="KZ">
+            🇰🇿 Казахстан ({{ products_by_country['KZ']|length }})
+        </button>
+        {% endif %}
+    </div>
+    
+    <!-- China Products -->
+    {% if products_by_country['CN'] %}
+    <div class="country-panel" data-country="CN">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">
+            🇨🇳 Товары из Китая
+        </h2>
+        
+        {% for product in products_by_country['CN'] %}
+        <div class="product-item">
+            <div class="product-info">
+                <div class="product-title">{{ product.product_title }}</div>
+                <div class="product-marketplace">
+                    {% if product.marketplace == 'aliexpress' %}
+                        🛒 AliExpress
+                    {% elif product.marketplace == 'pinduoduo' %}
+                        🛒 Pinduoduo
+                    {% elif product.marketplace == 'taobao' %}
+                        🛒 Taobao
+                    {% elif product.marketplace == '1688' %}
+                        🛒 1688.com
+                    {% else %}
+                        🛒 {{ product.marketplace }}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 2rem;">
+                <div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Цена за 1 шт:</div>
+                    <div class="product-price">{{ product.product_price }}</div>
+                </div>
+                
+                {% set price_numeric = product.product_price|replace('¥', '')|replace(',', '')|float %}
+                {% set total_price = price_numeric * lot.quantity %}
+                
+                <div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Общая сумма:</div>
+                    <div style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary);">
+                        ¥{{ "{:,.2f}".format(total_price) }}
+                    </div>
+                </div>
+                
+                <a href="{{ product.product_url }}" target="_blank" class="btn btn-primary">
+                    Открыть →
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Russia Products -->
+    {% if products_by_country['RU'] %}
+    <div class="country-panel" data-country="RU" style="display: {% if products_by_country['CN'] %}none{% else %}block{% endif %};">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">
+            🇷🇺 Товары из России
+        </h2>
+        
+        {% for product in products_by_country['RU'] %}
+        <div class="product-item">
+            <div class="product-info">
+                <div class="product-title">{{ product.product_title }}</div>
+                <div class="product-marketplace">🛒 {{ product.marketplace }}</div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 2rem;">
+                <div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Цена за 1 шт:</div>
+                    <div class="product-price">{{ product.product_price }}</div>
+                </div>
+                
+                <a href="{{ product.product_url }}" target="_blank" class="btn btn-primary">
+                    Открыть →
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Kazakhstan Products -->
+    {% if products_by_country['KZ'] %}
+    <div class="country-panel" data-country="KZ" style="display: {% if products_by_country['CN'] or products_by_country['RU'] %}none{% else %}block{% endif %};">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">
+            🇰🇿 Товары из Казахстана
+        </h2>
+        
+        {% for product in products_by_country['KZ'] %}
+        <div class="product-item">
+            <div class="product-info">
+                <div class="product-title">{{ product.product_title }}</div>
+                <div class="product-marketplace">🛒 {{ product.marketplace }}</div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 2rem;">
+                <div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Цена за 1 шт:</div>
+                    <div class="product-price">{{ product.product_price }}</div>
+                </div>
+                
+                <a href="{{ product.product_url }}" target="_blank" class="btn btn-primary">
+                    Открыть →
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if total_products == 0 %}
+    <div class="card text-center" style="padding: 3rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📦</div>
+        <h3 style="margin-bottom: 1rem;">Товары не найдены</h3>
+        <p style="color: var(--text-secondary);">
+            Для этого лота пока нет товаров в базе данных
+        </p>
+    </div>
+    {% endif %}
+    
+    <!-- Profit Calculator -->
+    {% if products_by_country['CN'] %}
+    <div class="card" style="margin-top: 2rem; padding: 2rem; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);">
+        <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--primary-color);">
+            💰 Калькулятор потенциальной прибыли
+        </h3>
+        
+        {% set min_price = products_by_country['CN'][0].product_price|replace('¥', '')|replace(',', '')|float %}
+        {% for product in products_by_country['CN'] %}
+            {% set price = product.product_price|replace('¥', '')|replace(',', '')|float %}
+            {% if price < min_price %}
+                {% set min_price = price %}
+            {% endif %}
+        {% endfor %}
+        
+        {% set total_cost = min_price * lot.quantity %}
+        {% set margin = lot.tender_price - total_cost %}
+        {% set margin_percent = (margin / lot.tender_price * 100) %}
+        
+        <div class="grid grid-3">
+            <div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                    Минимальная стоимость товаров
+                </div>
+                <div style="font-size: 1.5rem; font-weight: 700;">
+                    ¥{{ "{:,.2f}".format(total_cost) }}
+                </div>
+            </div>
+            
+            <div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                    Цена тендера
+                </div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">
+                    {{ "{:,.0f}".format(lot.tender_price) }} ₸
+                </div>
+            </div>
+            
+            <div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                    Потенциальная прибыль
+                </div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: {% if margin > 0 %}var(--secondary-color){% else %}var(--danger-color){% endif %};">
+                    {{ "{:,.0f}".format(margin) }} ₸ ({{ "{:.1f}".format(margin_percent) }}%)
+                </div>
+            </div>
+        </div>
+        
+        {% if margin > 0 %}
+        <div style="margin-top: 1.5rem; padding: 1rem; background: white; border-radius: 0.5rem; border-left: 4px solid var(--secondary-color);">
+            <p style="font-weight: 600; color: var(--secondary-color);">
+                ✅ Этот тендер потенциально прибыльный!
+            </p>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                При покупке по минимальной цене из Китая вы можете заработать около {{ "{:,.0f}".format(margin) }} ₸
+            </p>
+        </div>
+        {% else %}
+        <div style="margin-top: 1.5rem; padding: 1rem; background: white; border-radius: 0.5rem; border-left: 4px solid var(--danger-color);">
+            <p style="font-weight: 600; color: var(--danger-color);">
+                ⚠️ Внимание: потенциальный убыток
+            </p>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                Стоимость товаров превышает цену тендера. Проверьте расчеты или найдите более выгодные предложения.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Country tabs functionality is in main.js
+</script>
+{% endblock %}
