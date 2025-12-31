@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1>🎯 Находите самые выгодные тендеры</h1>
+        <p>
+            Автоматический поиск товаров из Казахстана, России и Китая для участия в государственных закупках
+        </p>
+        {% if not current_user.is_authenticated %}
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Начать работу</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline">Войти</a>
+            </div>
+        {% else %}
+            {% if current_user.has_access %}
+                <a href="{{ url_for('catalog') }}" class="btn btn-primary">Перейти в каталог</a>
+            {% else %}
+                <p style="margin-top: 1rem; font-size: 1.1rem;">
+                    ⏳ Ожидайте активации доступа администратором
+                </p>
+            {% endif %}
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features -->
+<section class="container features">
+    <h2 class="text-center mb-4" style="font-size: 2rem; font-weight: 700;">Преимущества платформы</h2>
+    
+    <div class="grid grid-3">
+        <div class="feature-card card">
+            <div class="feature-icon">🌍</div>
+            <h3 class="feature-title">3 страны - 1 платформа</h3>
+            <p class="card-text">
+                Поиск товаров одновременно в Казахстане, России и Китае. Сравнивайте цены и выбирайте лучшее.
+            </p>
+        </div>
+        
+        <div class="feature-card card">
+            <div class="feature-icon">💰</div>
+            <h3 class="feature-title">Расчет маржи</h3>
+            <p class="card-text">
+                Автоматический расчет вашей прибыли. Видите потенциальный заработок до участия в тендере.
+            </p>
+        </div>
+        
+        <div class="feature-card card">
+            <div class="feature-icon">🎯</div>
+            <h3 class="feature-title">Поиск по депозиту</h3>
+            <p class="card-text">
+                Укажите ваш бюджет и найдите тендеры, в которых можете участвовать прямо сейчас.
+            </p>
+        </div>
+        
+        <div class="feature-card card">
+            <div class="feature-icon">⚡</div>
+            <h3 class="feature-title">Быстрый поиск</h3>
+            <p class="card-text">
+                Мгновенная фильтрация по странам, ценам и категориям. Найдите нужное за секунды.
+            </p>
+        </div>
+        
+        <div class="feature-card card">
+            <div class="feature-icon">📊</div>
+            <h3 class="feature-title">Детальная информация</h3>
+            <p class="card-text">
+                Полная информация о лоте: цены, количество, ссылки на товары из разных магазинов.
+            </p>
+        </div>
+        
+        <div class="feature-card card">
+            <div class="feature-icon">🔐</div>
+            <h3 class="feature-title">Безопасность</h3>
+            <p class="card-text">
+                Ваши данные защищены. Доступ к каталогу только для проверенных пользователей.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="container" style="margin: 4rem auto;">
+    <h2 class="text-center mb-4" style="font-size: 2rem; font-weight: 700;">Как это работает?</h2>
+    
+    <div class="grid grid-4">
+        <div class="card text-center">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">1️⃣</div>
+            <h3 class="card-title">Регистрация</h3>
+            <p class="card-text">
+                Зарегистрируйтесь на платформе и дождитесь активации доступа администратором.
+            </p>
+        </div>
+        
+        <div class="card text-center">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">2️⃣</div>
+            <h3 class="card-title">Поиск тендеров</h3>
+            <p class="card-text">
+                Используйте фильтры для поиска подходящих тендеров по вашему бюджету и желаемой марже.
+            </p>
+        </div>
+        
+        <div class="card text-center">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">3️⃣</div>
+            <h3 class="card-title">Сравнение цен</h3>
+            <p class="card-text">
+                Смотрите цены на товары из Казахстана, России и Китая. Выбирайте оптимальный вариант.
+            </p>
+        </div>
+        
+        <div class="card text-center">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">4️⃣</div>
+            <h3 class="card-title">Участие в тендере</h3>
+            <p class="card-text">
+                Получите всю необходимую информацию для участия и максимизируйте вашу прибыль.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="container" style="margin: 4rem auto;">
+    <div class="stats-grid">
+        <div class="stat-card text-center">
+            <div class="stat-value" id="lotsCount">0</div>
+            <div class="stat-label">Тендеров в базе</div>
+        </div>
+        
+        <div class="stat-card text-center">
+            <div class="stat-value" id="productsCount">0</div>
+            <div class="stat-label">Найдено товаров</div>
+        </div>
+        
+        <div class="stat-card text-center">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Страны поиска</div>
+        </div>
+        
+        <div class="stat-card text-center">
+            <div class="stat-value">24/7</div>
+            <div class="stat-label">Доступность</div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+{% if not current_user.is_authenticated %}
+<section style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); color: white; padding: 4rem 2rem; text-align: center;">
+    <div class="container">
+        <h2 style="font-size: 2.5rem; margin-bottom: 1rem; font-weight: 800;">
+            Начните зарабатывать на тендерах уже сегодня
+        </h2>
+        <p style="font-size: 1.25rem; margin-bottom: 2rem; opacity: 0.9;">
+            Присоединяйтесь к успешным участникам государственных закупок
+        </p>
+        <a href="{{ url_for('register') }}" class="btn btn-outline" style="font-size: 1.1rem; padding: 1rem 2rem;">
+            Зарегистрироваться бесплатно
+        </a>
+    </div>
+</section>
+{% endif %}
+
+<script>
+// Load stats via API
+fetch('/api/stats')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('lotsCount').textContent = data.lots || 0;
+        document.getElementById('productsCount').textContent = data.products || 0;
+    })
+    .catch(err => console.error('Error loading stats:', err));
+</script>
+{% endblock %}
